@@ -1,0 +1,53 @@
+PromptCalculate the lower bound shaft friction for a pile using the following input data.
+The pile tip level is at NAP -0.7 m.
+
+The soil investigation consists of two CPT tests with identical coordinates (x = 142892.19, y = 470783.87). Each CPT dataset includes depth-dependent cone resistance (qc), soil layer properties, and groundwater conditions.
+
+CPT Test 1 (test_id: cpt_001):
+
+Depth (m): [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+
+qc (MPa): [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+
+Layer properties:
+
+Lower boundaries (m): [0.5, 2]
+
+Thickness (m): [0.7, 1.5]
+
+Main components: ["clay", "sand"]
+
+Gamma unsaturated (kN/m³): [15, 19]
+
+Gamma saturated (kN/m³): [15, 21]
+
+Friction angle φ (rad): [0.2, 0.4799655443]
+
+Reference height: 0
+
+Water pressure: 0.00981 
+
+CPT Test 2 (test_id: cpt_002):
+
+Depth (m): [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+
+qc (MPa): [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+
+Layer properties:
+
+Lower boundaries (m): [0.5, 2]
+
+Thickness (m): [0.5, 1.5]
+
+Main components: ["clay", "sand"]
+
+Gamma unsaturated (kN/m³): [15, 19]
+
+Gamma saturated (kN/m³): [15, 21]
+
+Friction angle φ (rad): [0.2, 0.4799655443]
+
+Reference height: 0
+
+Water pressure: 0.00981
+Answer: calculate lower bound friction
