@@ -1,5 +1,5 @@
 from typing import List, Optional, Literal, Union, Annotated
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 # ---------------------------
@@ -22,13 +22,11 @@ class Coordinates(BaseModel):
 class CPTData(BaseModel):
     qc: List[NonNegativeFloat] = Field(
         ...,
-        min_length=1,
         description="Cone resistance [MPa]"
     )
 
     depth: List[NonNegativeFloat] = Field(
         ...,
-        min_length=1,
         description="Depth below service level [m]"
     )
 
@@ -39,11 +37,7 @@ class CPTData(BaseModel):
 
 
 class LayerTableData(BaseModel):
-    thickness: List[PositiveFloat] = Field(
-        None,description = "Layer thickness. Must be explicitly provided. Do not infer or copy from other soil entries.",
-        min_length=1,
-        max_length=100
-    )
+    thickness: Optional[List[PositiveFloat]] = None
 
     lower_boundary: List[NonNegativeFloat] = Field(
         ...,
@@ -76,7 +70,7 @@ class LayerTableData(BaseModel):
     )
 
     gamma_unsat: List[NonNegativeFloat] = Field(
-        ...,
+        ..., # Required field
         min_length=1,
         max_length=100
     )
@@ -141,3 +135,13 @@ class LowerBound_Friction(BaseModel):
     ] = "surface"
 
     excavation_depth_nap: Optional[float] = None
+
+    @model_validator(mode="after") 
+    def validate_thickness(self): 
+        for i in range(len(self.soil_properties_list)): 
+            layer_data = self.soil_properties_list[i].layer_table_data 
+            if layer_data.thickness is None: 
+                raise ValueError(f"Thickness data is required for CPT data at index {i+1} in CPT data list.")
+        return self
+    
+            
