@@ -15,18 +15,17 @@ NonNegativeFloat = Annotated[float, Field(ge=0)]
 # ---------------------------
 
 class Coordinates(BaseModel):
-    x: float = Field(..., example=142892.19)
-    y: float = Field(..., example=470783.87)
+    x: Optional[float] = Field(None, example=142892.19)
+    y: Optional[float] = Field(None, example=470783.87)
 
 
 class CPTData(BaseModel):
-    qc: List[NonNegativeFloat] = Field(
-        ...,
-        description="Cone resistance [MPa]"
+    qc: Optional[Annotated[List[NonNegativeFloat], Field(description="Cone resistance [MPa]")]] = Field(
+        default=None
     )
 
-    depth: List[NonNegativeFloat] = Field(
-        ...,
+    depth: Optional[List[NonNegativeFloat]] = Field(
+        default=None,
         description="Depth below service level [m]"
     )
 
@@ -39,8 +38,8 @@ class CPTData(BaseModel):
 class LayerTableData(BaseModel):
     thickness: Optional[List[PositiveFloat]] = None
 
-    lower_boundary: List[NonNegativeFloat] = Field(
-        ...,
+    lower_boundary: Optional[List[NonNegativeFloat]] = Field(
+        default=None,
         min_length=1,
         max_length=100
     )
@@ -69,28 +68,28 @@ class LayerTableData(BaseModel):
         max_length=100
     )
 
-    gamma_unsat: List[NonNegativeFloat] = Field(
-        ..., # Required field
+    gamma_unsat: Optional[List[NonNegativeFloat]] = Field(
+        default=None,
         min_length=1,
         max_length=100
     )
 
-    gamma_sat: List[NonNegativeFloat] = Field(
-        ...,
+    gamma_sat: Optional[List[NonNegativeFloat]] = Field(
+        default=None,
         min_length=1,
         max_length=100
     )
 
-    phi: List[NonNegativeFloat] = Field(
-        ...,
+    phi: Optional[List[NonNegativeFloat]] = Field(
+        default=None,
         min_length=1,
         max_length=100
     )
 
-    main_component: List[
+    main_component: Optional[List[
         Literal["gravel", "sand", "silt", "clay", "peat"]
-    ] = Field(
-        ...,
+    ]] = Field(
+        default=None,
         min_length=1,
         max_length=100
     )
@@ -106,7 +105,7 @@ class SoilProperties(BaseModel):
     cpt_data: CPTData
     layer_table_data: LayerTableData
 
-    ref_height: float
+    ref_height: Optional[float] = None
     test_id: str
 
     water_pressure: float = Field(
@@ -120,6 +119,7 @@ class SoilProperties(BaseModel):
         default=1,
         description="Over-consolidation ratio"
     )
+    
 
 
 class LowerBound_Friction(BaseModel):
@@ -137,11 +137,40 @@ class LowerBound_Friction(BaseModel):
     excavation_depth_nap: Optional[float] = None
 
     @model_validator(mode="after") 
-    def validate_thickness(self): 
+    def validate_attributes(self): 
         for i in range(len(self.soil_properties_list)): 
+            soil_properties = self.soil_properties_list[i]
             layer_data = self.soil_properties_list[i].layer_table_data 
             if layer_data.thickness is None: 
                 raise ValueError(f"Thickness data is required for CPT data at index {i+1} in CPT data list.")
+            if soil_properties.ref_height is None: 
+                raise ValueError(f"Reference height is required for CPT data at index {i+1} in CPT data list.")
+            if soil_properties.test_id is None: 
+                raise ValueError(f"Test ID is required for CPT data at index {i+1} in CPT data list.")
+            if soil_properties.cpt_data.qc is None: 
+                raise ValueError(f"qc data is required for CPT data at index {i+1} in CPT data list.")
+            if soil_properties.cpt_data.depth is None: 
+                raise ValueError(f"Depth data is required for CPT data at index {i+1} in CPT data list.")
+            if len(soil_properties.cpt_data.qc) != len(soil_properties.cpt_data.depth): 
+                raise ValueError(f"qc and depth data must be of the same length for CPT data at index {i+1} in CPT data list.")
+            if layer_data.lower_boundary is None: 
+                raise ValueError(f"Lower boundary data is required for CPT data at index {i+1} in CPT data list.")
+            if layer_data.gamma_unsat is None: 
+                raise ValueError(f"Dry unit weight data is required for CPT data at index {i+1} in CPT data list.")
+            if layer_data.C_s and layer_data.C_p and len(layer_data.C_s) != len(layer_data.C_p):
+                raise ValueError(f"C_s and C_p(Koppejan parameters) data must be of the same length for CPT data at index {i+1} in CPT data list.")
+            if layer_data.gamma_sat is None: 
+                raise ValueError(f"Saturated unit weight data is required for CPT data at index {i+1} in CPT data list.")
+            if len(layer_data.gamma_unsat) != len(layer_data.gamma_sat):
+                raise ValueError(f"Unsaturated and saturated unit weight data must be of the same length for CPT data at index {i+1} in CPT data list.")
+            
+            if layer_data.phi is None: 
+                raise ValueError(f"Internal Friction angle data is required for CPT data at index {i+1} in CPT data list.")
+            if layer_data.main_component is None: 
+                raise ValueError(f"Main component data(gravel, sand, silt, clay, peat) is required for CPT data at index {i+1} in CPT data list.")
         return self
     
+    
+
+
             
